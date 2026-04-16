@@ -14,6 +14,13 @@ FPS = 60
 clock = pygame.time.Clock()
 
 
+#LOAD ASSETS
+player_img = pygame.image.load("player_ship.png")
+alien_img = pygame.image.load("alien.png")
+player_img = pygame.transform.scale(player_img, (60, 60))
+alien_img = pygame.transform.scale(alien_img, (50, 50))
+
+
 #Define Classes
 class Game():
     """A class to help control and update gameplay"""
@@ -23,11 +30,12 @@ class Game():
         self.alien_group = alien_group
         self.player_bullet_group = player_bullet_group
         self.alien_bullet_group = alien_bullet_group
-        pass
+
+        self.round = 1
 
     def update(self):
+        self.check_round_completion()
         pygame.display.flip()
-        pass
 
     def draw(self):
         pass
@@ -39,10 +47,20 @@ class Game():
         pass
 
     def check_round_completion(self):
-        pass
+        if len(self.alien_group) == 0:
+            self.start_new_round()
 
     def start_new_round(self):
-        pass
+        self.round += 1
+
+        for _ in range(5 + self.round):
+            alien = Alien(
+                random.randint(50, WINDOW_WIDTH - 50),
+                random.randint(-200, -50),
+                random.randint(1, 3),
+                my_alien_bullet_group
+            )
+            self.alien_group.add(alien)
 
     def check_game_status(self, main_text, sub_text):
         pass
@@ -55,13 +73,11 @@ class Game():
 
 
 class Player(pygame.sprite.Sprite):
-    """A class to model a spaceship the user can control"""
 
     def __init__(self, bullet_group):
         super().__init__()
 
-        self.image = pygame.Surface((50, 50))
-        self.image.fill((0, 255, 0))
+        self.image = player_img
         self.rect = self.image.get_rect()
 
         self.rect.centerx = WINDOW_WIDTH // 2
@@ -92,16 +108,26 @@ class Alien(pygame.sprite.Sprite):
 
     def __init__(self, x, y, velocity, bullet_group):
         super().__init__()
-        pass
+
+        self.image = alien_img
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.velocity = velocity
+        self.bullet_group = bullet_group
 
     def update(self):
-        pass
+        self.rect.y += self.velocity
+
+        if self.rect.top > WINDOW_HEIGHT:
+            self.reset()
 
     def fire(self):
         pass
 
     def reset(self):
-        pass
+        self.rect.x = random.randint(50, WINDOW_WIDTH - 50)
+        self.rect.y = random.randint(-200, -50)
 
 
 class PlayerBullet(pygame.sprite.Sprite):
@@ -146,7 +172,17 @@ my_alien_group = pygame.sprite.Group()
 
 #Create a Game object
 my_game = Game(my_player, my_alien_group, my_player_bullet_group, my_alien_bullet_group)
-my_game.start_new_round()
+
+#START FIRST ROUND
+for _ in range(5):
+    my_alien_group.add(
+        Alien(
+            random.randint(50, WINDOW_WIDTH - 50),
+            random.randint(-200, -50),
+            2,
+            my_alien_bullet_group
+        )
+    )
 
 
 #The main game loop
@@ -185,4 +221,5 @@ while running:
     clock.tick(FPS)
 
 #End the game
+pygame.quit()
 pygame.quit()
